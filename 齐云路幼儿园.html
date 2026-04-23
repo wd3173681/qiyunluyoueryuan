@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>齐云路幼儿园 - 班级管理系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --primary-dark: #EE5A5A;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --bg: #FFF9F0;
+            --card: #FFFFFF;
+            --text: #2C3E50;
+            --text-light: #7F8C8D;
+            --border: #E8E8E8;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --warning: #F39C12;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+        .nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        .nav-menu a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .nav-menu a:hover, .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFF9F0 100%);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            color: var(--text-light);
+            margin-top: 0.3rem;
+        }
+        .grade-section { margin: 2.5rem 0; }
+        .grade-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .grade-title h2 { font-size: 1.4rem; color: var(--text); }
+        .grade-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .badge-da { background: #FF6B6B20; color: #FF6B6B; }
+        .badge-zhong { background: #4ECDC420; color: #4ECDC4; }
+        .badge-xiao { background: #FFE66D30; color: #B8860B; }
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .class-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 4px;
+            background: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+        .class-card:hover::before { opacity: 1; }
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        .class-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .class-teacher {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .student-count {
+            background: var(--bg);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .class-info {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .class-detail-header {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .class-detail-info h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .class-detail-info p { color: var(--text-light); }
+        .action-buttons { display: flex; gap: 0.8rem; }
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Noto Sans SC', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #27AE60;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #C0392B;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--border); }
+        .student-table-container {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .search-box { position: relative; }
+        .search-box input {
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            width: 250px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+        }
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+        tr:hover { background: var(--bg); }
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .student-name {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .gender-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .gender-boy { background: #E3F2FD; color: #1976D2; }
+        .gender-girl { background: #FCE4EC; color: #C2185B; }
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .status-normal { background: #E8F5E9; color: #2E7D32; }
+        .status-leave { background: #FFF3E0; color: #EF6C00; }
+        .status-transfer { background: #F3E5F5; color: #7B1FA2; }
+        .action-btns { display: flex; gap: 0.5rem; }
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+        .btn-edit {
+            background: #E3F2FD;
+            color: #1976D2;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-edit:hover { background: #1976D2; color: white; }
+        .btn-delete {
+            background: #FFEBEE;
+            color: #C62828;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-delete:hover { background: #C62828; color: white; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+        .modal {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h3 { font-size: 1.3rem; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .close-btn:hover { background: var(--bg); color: var(--text); }
+        .form-row { margin-bottom: 1.2rem; }
+        .form-row label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .form-row input,
+        .form-row select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-row input:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255,107,107,0.1);
+        }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .form-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-hover);
+            z-index: 3000;
+            transform: translateX(150%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-info { background: var(--secondary); }
+        .confirm-dialog {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .confirm-dialog p { margin-bottom: 1.5rem; color: var(--text-light); }
+        .confirm-dialog strong { color: var(--text); }
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .container { padding: 1rem; }
+            .class-grid { grid-template-columns: 1fr; }
+            .class-detail-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .action-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            .table-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .search-box input { width: 100%; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 0.7rem 0.5rem; }
+            .student-name {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+            .action-btns { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <div class="logo-icon">🏫</div>
+                <span>齐云路幼儿园</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a onclick="showPage('home')" class="active" id="nav-home">首页</a></li>
+                <li><a onclick="showPage('classes')" id="nav-classes">班级管理</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div id="page-home" class="page active">
+        <div class="container">
+            <div class="hero">
+                <h1>🏫 齐云路幼儿园</h1>
+                <p>用心呵护每一颗幼苗，让童年充满阳光与欢笑</p>
+            </div>
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-classes">7</div>
+                    <div class="stat-label">班级总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-students">0</div>
+                    <div class="stat-label">在园学生</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-teachers">14</div>
+                    <div class="stat-label">教职员工</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2018</div>
+                    <div class="stat-label">建园年份</div>
+                </div>
+            </div>
+            <div class="grade-section">
+                <div class="grade-title">
+                    <h2>🎓 大班</h2>
+                    <span class="grade-badge badge-da">5-6岁</span>
+                </div>
+                <div class="class-grid" id="da-classes"></div>
+            </div>
+            <div class="grade-section">
+                <div class="grade-title">
+                    <h2>🌱 中班</h2>
+                    <span class="grade-badge badge-zhong">4-5岁</span>
+                </div>
+                <div class="class-grid" id="zhong-classes"></div>
+            </div>
+            <div class="grade-section">
+                <div class="grade-title">
+                    <h2>🌸 小班</h2>
+                    <span class="grade-badge badge-xiao">3-4岁</span>
+                </div>
+                <div class="class-grid" id="xiao-classes"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-classes" class="page">
+        <div class="container">
+            <div class="breadcrumb">
+                <a onclick="showPage('home')">首页</a>
+                <span>/</span>
+                <span>班级管理</span>
+            </div>
+            <h2 style="margin-bottom: 1.5rem;">📋 班级总览</h2>
+            <div class="class-grid" id="all-classes"></div>
+        </div>
+    </div>
+
+    <div id="page-detail" class="page">
+        <div class="container">
+            <div class="breadcrumb">
+                <a onclick="showPage('home')">首页</a>
+                <span>/</span>
+                <a onclick="showPage('classes')">班级管理</a>
+                <span>/</span>
+                <span id="detail-class-name">班级详情</span>
+            </div>
+            <div class="class-detail-header">
+                <div class="class-detail-info">
+                    <h2 id="detail-title">--</h2>
+                    <p id="detail-subtitle">班主任：-- | 学生人数：--人</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openStudentModal()">
+                        <span>➕</span> 添加学生
+                    </button>
+                    <button class="btn btn-secondary" onclick="showPage('classes')">
+                        <span>←</span> 返回列表
+                    </button>
+                </div>
+            </div>
+            <div class="student-table-container">
+                <div class="table-header">
+                    <h3>👶 学生名单</h3>
+                    <div class="search-box">
+                        <input type="text" id="student-search" placeholder="搜索学生姓名..." oninput="searchStudents()">
+                    </div>
+                </div>
+                <div id="student-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>学号</th>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>年龄</th>
+                                <th>家长电话</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="student-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">添加学生</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <form id="student-form" onsubmit="saveStudent(event)">
+                <input type="hidden" id="student-id">
+                <div class="form-row">
+                    <label>姓名 *</label>
+                    <input type="text" id="student-name" required placeholder="请输入学生姓名">
+                </div>
+                <div class="form-row">
+                    <label>性别 *</label>
+                    <select id="student-gender" required>
+                        <option value="">请选择</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>年龄 *</label>
+                    <input type="number" id="student-age" required min="3" max="7" placeholder="请输入年龄">
+                </div>
+                <div class="form-row">
+                    <label>家长姓名</label>
+                    <input type="text" id="student-parent" placeholder="请输入家长姓名">
+                </div>
+                <div class="form-row">
+                    <label>家长电话 *</label>
+                    <input type="tel" id="student-phone" required placeholder="请输入联系电话">
+                </div>
+                <div class="form-row">
+                    <label>状态</label>
+                    <select id="student-status">
+                        <option value="在读">在读</option>
+                        <option value="请假">请假</option>
+                        <option value="转园">转园</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>⚠️ 确认删除</h3>
+                <button class="close-btn" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div class="confirm-dialog">
+                <p>确定要删除学生 <strong id="delete-student-name">--</strong> 吗？</p>
+                <p style="font-size: 0.85rem; color: var(--danger);">此操作不可恢复！</p>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+                    <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const CLASSES_DATA = [
+            { id: 'da1', name: '大一班', grade: '大班', gradeType: 'da', teacher: '王老师', assistant: '李老师', ageRange: '5-6岁', room: '301教室', count: 0 },
+            { id: 'da2', name: '大二班', grade: '大班', gradeType: 'da', teacher: '张老师', assistant: '刘老师', ageRange: '5-6岁', room: '302教室', count: 0 },
+            { id: 'da3', name: '大三班', grade: '大班', gradeType: 'da', teacher: '陈老师', assistant: '赵老师', ageRange: '5-6岁', room: '303教室', count: 0 },
+            { id: 'zhong1', name: '中一班', grade: '中班', gradeType: 'zhong', teacher: '孙老师', assistant: '周老师', ageRange: '4-5岁', room: '201教室', count: 0 },
+            { id: 'zhong2', name: '中二班', grade: '中班', gradeType: 'zhong', teacher: '吴老师', assistant: '郑老师', ageRange: '4-5岁', room: '202教室', count: 0 },
+            { id: 'xiao1', name: '小一班', grade: '小班', gradeType: 'xiao', teacher: '钱老师', assistant: '冯老师', ageRange: '3-4岁', room: '101教室', count: 0 },
+            { id: 'xiao2', name: '小二班', grade: '小班', gradeType: 'xiao', teacher: '卫老师', assistant: '蒋老师', ageRange: '3-4岁', room: '102教室', count: 0 }
+        ];
+
+        const INITIAL_STUDENTS = {
+            'da1': [
+                { id: 1, name: '小明', gender: '男', age: 6, parent: '大明', phone: '13800138001', status: '在读' },
+                { id: 2, name: '小红', gender: '女', age: 5, parent: '大红', phone: '13800138002', status: '在读' },
+                { id: 3, name: '小刚', gender: '男', age: 6, parent: '大刚', phone: '13800138003', status: '在读' }
+            ],
+            'da2': [
+                { id: 4, name: '小丽', gender: '女', age: 5, parent: '大丽', phone: '13800138004', status: '在读' },
+                { id: 5, name: '小华', gender: '男', age: 6, parent: '大华', phone: '13800138005', status: '请假' }
+            ],
+            'da3': [
+                { id: 6, name: '小芳', gender: '女', age: 5, parent: '大芳', phone: '13800138006', status: '在读' }
+            ],
+            'zhong1': [
+                { id: 7, name: '小军', gender: '男', age: 4, parent: '大军', phone: '13800138007', status: '在读' },
+                { id: 8, name: '小敏', gender: '女', age: 4, parent: '大敏', phone: '13800138008', status: '在读' }
+            ],
+            'zhong2': [
+                { id: 9, name: '小波', gender: '男', age: 4, parent: '大波', phone: '13800138009', status: '转园' }
+            ],
+            'xiao1': [
+                { id: 10, name: '小雨', gender: '女', age: 3, parent: '大雨', phone: '13800138010', status: '在读' },
+                { id: 11, name: '小雷', gender: '男', age: 3, parent: '大雷', phone: '13800138011', status: '在读' }
+            ],
+            'xiao2': [
+                { id: 12, name: '小雪', gender: '女', age: 3, parent: '大雪', phone: '13800138012', status: '在读' }
+            ]
+        };
+
+        let studentsData = {};
+        let currentClassId = null;
+        let deleteStudentId = null;
+        let editingStudentId = null;
+
+        function init() {
+            const saved = localStorage.getItem('qiyunlu_students');
+            if (saved) {
+                studentsData = JSON.parse(saved);
+            } else {
+                studentsData = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
+                saveToStorage();
+            }
+            updateClassCounts();
+            renderHome();
+            renderAllClasses();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('qiyunlu_students', JSON.stringify(studentsData));
+        }
+
+        function updateClassCounts() {
+            CLASSES_DATA.forEach(cls => {
+                const list = studentsData[cls.id] || [];
+                cls.count = list.filter(s => s.status === '在读' || s.status === '请假').length;
+            });
+        }
+
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageName).classList.add('active');
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+            if (pageName === 'home') document.getElementById('nav-home').classList.add('active');
+            if (pageName === 'classes') document.getElementById('nav-classes').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function renderHome() {
+            const daContainer = document.getElementById('da-classes');
+            const zhongContainer = document.getElementById('zhong-classes');
+            const xiaoContainer = document.getElementById('xiao-classes');
+            daContainer.innerHTML = '';
+            zhongContainer.innerHTML = '';
+            xiaoContainer.innerHTML = '';
+            let totalStudents = 0;
+            CLASSES_DATA.forEach(cls => {
+                totalStudents += cls.count;
+                const card = createClassCard(cls);
+                if (cls.gradeType === 'da') daContainer.appendChild(card);
+                else if (cls.gradeType === 'zhong') zhongContainer.appendChild(card);
+                else xiaoContainer.appendChild(card);
+            });
+            document.getElementById('total-students').textContent = totalStudents;
+        }
+
+        function createClassCard(cls) {
+            const div = document.createElement('div');
+            div.className = 'class-card';
+            div.onclick = () => showClassDetail(cls.id);
+            div.innerHTML = `
+                <div class="class-header">
+                    <div>
+                        <div class="class-name">${cls.name}</div>
+                        <div class="class-teacher">
+                            <span>👩‍🏫</span> 班主任：${cls.teacher}
+                        </div>
+                    </div>
+                    <div class="student-count">${cls.count} 人</div>
+                </div>
+                <div class="class-info">
+                    <div class="info-item">
+                        <span>👤</span> 助教：${cls.assistant}
+                    </div>
+                    <div class="info-item">
+                        <span>🚪</span> ${cls.room}
+                    </div>
+                    <div class="info-item">
+                        <span>📅</span> ${cls.ageRange}
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function renderAllClasses() {
+            const container = document.getElementById('all-classes');
+            container.innerHTML = '';
+            CLASSES_DATA.forEach(cls => {
+                container.appendChild(createClassCard(cls));
+            });
+        }
+
+        function showClassDetail(classId) {
+            currentClassId = classId;
+            const cls = CLASSES_DATA.find(c => c.id === classId);
+            if (!cls) return;
+            document.getElementById('detail-class-name').textContent = cls.name;
+            document.getElementById('detail-title').textContent = cls.name;
+            document.getElementById('detail-subtitle').textContent = 
+                `班主任：${cls.teacher} | 学生人数：${cls.count}人 | 教室：${cls.room}`;
+            renderStudentTable();
+            showPage('detail');
+        }
+
+        function renderStudentTable() {
+            const tbody = document.getElementById('student-tbody');
+            const students = studentsData[currentClassId] || [];
+            const searchTerm = document.getElementById('student-search').value.toLowerCase();
+            tbody.innerHTML = '';
+            const filtered = searchTerm 
+                ? students.filter(s => s.name.toLowerCase().includes(searchTerm))
+                : students;
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👶</div>
+                            <p>${searchTerm ? '没有找到匹配的学生' : '该班级暂无学生，点击上方按钮添加'}</p>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+            filtered.forEach(student => {
+                const tr = document.createElement('tr');
+                const genderClass = student.gender === '男' ? 'gender-boy' : 'gender-girl';
+                const statusClass = student.status === '在读' ? 'status-normal' : 
+                                   student.status === '请假' ? 'status-leave' : 'status-transfer';
+                tr.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>
+                        <div class="student-name">
+                            <div class="student-avatar">${student.name[0]}</div>
+                            <span>${student.name}</span>
+                        </div>
+                    </td>
+                    <td><span class="gender-badge ${genderClass}">${student.gender}</span></td>
+                    <td>${student.age}岁</td>
+                    <td>${student.phone}</td>
+                    <td><span class="status-badge ${statusClass}">${student.status}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-small btn-edit" onclick="editStudent(${student.id})">编辑</button>
+                            <button class="btn-small btn-delete" onclick="deleteStudent(${student.id})">删除</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function searchStudents() {
+            renderStudentTable();
+        }
+
+        function openStudentModal() {
+            editingStudentId = null;
+            document.getElementById('modal-title').textContent = '添加学生';
+            document.getElementById('student-form').reset();
+            document.getElementById('student-id').value = '';
+            document.getElementById('student-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('student-modal').classList.remove('active');
+        }
+
+        function saveStudent(event) {
+            event.preventDefault();
+            const name = document.getElementById('student-name').value.trim();
+            const gender = document.getElementById('student-gender').value;
+            const age = parseInt(document.getElementById('student-age').value);
+            const parent = document.getElementById('student-parent').value.trim();
+            const phone = document.getElementById('student-phone').value.trim();
+            const status = document.getElementById('student-status').value;
+            if (!name || !gender || !age || !phone) {
+                showToast('请填写必填项！', 'error');
+                return;
+            }
+            if (!studentsData[currentClassId]) {
+                studentsData[currentClassId] = [];
+            }
+            if (editingStudentId) {
+                const index = studentsData[currentClassId].findIndex(s => s.id === editingStudentId);
+                if (index !== -1) {
+                    studentsData[currentClassId][index] = {
+                        id: editingStudentId,
+                        name, gender, age, parent, phone, status
+                    };
+                    showToast('学生信息更新成功！', 'success');
+                }
+            } else {
+                const newId = Math.max(0, ...Object.values(studentsData).flat().map(s => s.id)) + 1;
+                studentsData[currentClassId].push({
+                    id: newId,
+                    name, gender, age, parent, phone, status
+                });
+                showToast('学生添加成功！', 'success');
+            }
+            saveToStorage();
+            updateClassCounts();
+            renderStudentTable();
+            renderHome();
+            renderAllClasses();
+            closeModal();
+        }
+
+        function editStudent(id) {
+            const student = studentsData[currentClassId].find(s => s.id === id);
+            if (!student) return;
+            editingStudentId = id;
+            document.getElementById('modal-title').textContent = '编辑学生';
+            document.getElementById('student-name').value = student.name;
+            document.getElementById('student-gender').value = student.gender;
+            document.getElementById('student-age').value = student.age;
+            document.getElementById('student-parent').value = student.parent || '';
+            document.getElementById('student-phone').value = student.phone;
+            document.getElementById('student-status').value = student.status;
+            document.getElementById('student-modal').classList.add('active');
+        }
+
+        function deleteStudent(id) {
+            const student = studentsData[currentClassId].find(s => s.id === id);
+            if (!student) return;
+            deleteStudentId = id;
+            document.getElementById('delete-student-name').textContent = student.name;
+            document.getElementById('delete-modal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.remove('active');
+            deleteStudentId = null;
+        }
+
+        function confirmDelete() {
+            if (!deleteStudentId || !currentClassId) return;
+            const index = studentsData[currentClassId].findIndex(s => s.id === deleteStudentId);
+            if (index !== -1) {
+                studentsData[currentClassId].splice(index, 1);
+                saveToStorage();
+                updateClassCounts();
+                renderStudentTable();
+                renderHome();
+                renderAllClasses();
+                showToast('学生已删除', 'info');
+            }
+            closeDeleteModal();
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+
+        init();
+    </script>
+</body>
+</html>
